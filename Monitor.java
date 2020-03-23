@@ -1,3 +1,5 @@
+import java.util.concurrent.locks.Condition;
+
 /**
  * Class Monitor
  * To synchronize dining philosophers.
@@ -11,7 +13,9 @@ public class Monitor
 	 * Data members
 	 * ------------
 	 */
-
+	int numPhil;
+	enum State {THINKING, EATING, TALKING, HUNGRY};
+	State[] philState;
 
 	/**
 	 * Constructor
@@ -19,6 +23,13 @@ public class Monitor
 	public Monitor(int piNumberOfPhilosophers)
 	{
 		// TODO: set appropriate number of chopsticks based on the # of philosophers
+		//CAMIL: We don't necessarily need to keep track of chopsticks. See the word doc.
+		numPhil = piNumberOfPhilosophers;
+		philState = new State[numPhil];
+		for (int i=0; i<numPhil; i++) {
+			philState[i] = State.THINKING;
+		}
+		
 	}
 
 	/*
@@ -34,6 +45,16 @@ public class Monitor
 	public synchronized void pickUp(final int piTID)
 	{
 		// ...
+		//CAMIL: Have to add a check for tryEating at the beginning of this method.
+		philState[piTID] = State.HUNGRY;
+		//Every one around me is eating, then I have to wait
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	/**
@@ -61,6 +82,18 @@ public class Monitor
 	public synchronized void endTalk()
 	{
 		// ...
+	}
+	//CAMIL: I'm the one who added this method.
+	public synchronized void tryEating(final int piTID) {
+		//
+		if ((philState[(piTID +(numPhil-1)) % numPhil]!=State.EATING)
+			&& (philState[piTID]==State.HUNGRY)
+			&& (philState[(piTID+1)%numPhil]!=State.EATING)
+			) {
+			
+			philState[piTID] = State.EATING;
+			notifyAll();
+		}
 	}
 }
 

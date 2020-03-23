@@ -87,6 +87,10 @@ public class Philosopher extends BaseThread
 			 * A decision is made at random whether this particular
 			 * philosopher is about to say something terribly useful.
 			 */
+			//CAMIL: Need to put a condition (a random number or something, and compare it with a number. If it is matching):
+			//CAMIL: requestTalk
+			//CAMIL: talk
+			//CAMIL: endTalk
 			if(true == false)
 			{
 				// Some monitor ops down here...
