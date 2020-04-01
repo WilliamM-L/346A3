@@ -92,35 +92,43 @@ public class Philosopher extends BaseThread
 	 */
 	public void run()
 	{
-		for(int i = 0; i < DiningPhilosophers.DINING_STEPS; i++)
+		try 
 		{
-			DiningPhilosophers.soMonitor.pickUp(getTID());
-
-			eat();
-
-			DiningPhilosophers.soMonitor.putDown(getTID());
-
-			think();
-
-			/*
-			 * TODO:
-			 * A decision is made at random whether this particular
-			 * philosopher is about to speak.
-			 */
-			//CAMIL: Need to put a condition (a random number or something, and compare it with a number. If it is matching):
-			//CAMIL: requestTalk
-			//CAMIL: talk
-			//CAMIL: endTalk
-			//W: a philosopher will talk 1/4 of the time
-			if(Math.random() > 0.75)
+			for(int i = 0; i < DiningPhilosophers.DINING_STEPS; i++)
 			{
-				// Some monitor ops down here...
-				talk();
-				// ...
-			}
+				DiningPhilosophers.soMonitor.pickUp(getTID()-1);
 
-			yield();
+				eat();
+
+				DiningPhilosophers.soMonitor.putDown(getTID()-1);
+
+				think();
+
+				/*
+				 * TODO:
+				 * A decision is made at random whether this particular
+				 * philosopher is about to speak.
+				 */
+				//CAMIL: Need to put a condition (a random number or something, and compare it with a number. If it is matching):
+				//CAMIL: requestTalk
+				//CAMIL: talk
+				//CAMIL: endTalk
+				//W: if there are 6 philosophers, each one has 2/6 = 1/3 chance to talk
+				if(Math.random() < 2.0/DiningPhilosophers.soMonitor.numPhil)
+				{
+					DiningPhilosophers.soMonitor.requestTalk(this.iTID-1);
+					talk();
+					DiningPhilosophers.soMonitor.endTalk(this.iTID-1);
+				}
+
+				yield();
+				//System.out.println(String.format("~~~~~~~~~~~P%d: Dining step %d is over.~~~~~~~~~~~", i,this.iTID));
+			}
+		} catch(InterruptedException e)
+		{
+			System.out.println(e);
 		}
+		
 	} // run()
 
 	/**

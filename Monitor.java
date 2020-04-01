@@ -1,5 +1,3 @@
-import java.util.concurrent.locks.Condition;
-
 /**
  * Class Monitor
  * To synchronize dining philosophers.
@@ -23,11 +21,7 @@ public class Monitor
 	 */
 	public Monitor(int piNumberOfPhilosophers)
 	{
-		// TODO: set appropriate number of chopsticks based on the # of philosophers
-		//CAMIL: We don't necessarily need to keep track of chopsticks. See the word doc.
-		//W: True, we are simply signaling the others
-		
-		//W: All philosophers are initially thinking
+		//All philosophers are initially thinking
 		numPhil = piNumberOfPhilosophers;
 		philState = new State[numPhil];
 		for (int i=0; i<numPhil; i++) {
@@ -46,21 +40,35 @@ public class Monitor
 	 * Grants request (returns) to eat when both chopsticks are available.
 	 * Else forces the philosopher to wait()
 	 */
-	public synchronized void pickUp(final int piTID)
+	public void pickUp(final int piTID) throws InterruptedException
 	{
-		// ...
-		//CAMIL: Have to add a check for tryEating at the beginning of this method.
+		//need this var since the waiting occurs outside of the synched block
+		//boolean canEat = false;
 		philState[piTID] = State.HUNGRY;
 		//Every one around me is eating, then I have to wait
-		//W: I think the method should be called after wait, since it blocks at wait and is released when a philo is done eating
-		tryEating(piTID);
-		if (philState[piTID] != State.EATING) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				System.err.println(e);
+		while(philState[piTID] == State.HUNGRY) 
+		{
+			synchronized (this) {
+				if ((philState[(piTID +(numPhil-1)) % numPhil]!=State.EATING)
+						&& (philState[piTID]==State.HUNGRY)
+						&& (philState[(piTID+1)%numPhil]!=State.EATING)
+						) 
+				{
+					philState[piTID] = State.EATING;
+					//canEat = true;
+				}
+				else
+				{
+					//canEat = false;
+					this.wait();
+				}
 			}
+			
+//			if(!canEat) 
+//			{
+//				this.wait();
+//			}
+			
 		}
 		
 	}
@@ -71,56 +79,33 @@ public class Monitor
 	 */
 	public synchronized void putDown(final int piTID)
 	{
-		//W: what's the constant for? 5
-		// I think the notifyall call should go here instead of in tryEating
+		//Going back to thinking and letting everyone know
 		philState[piTID] = State.THINKING;
-		//W: why are we forcing the philos next to him to eat?
-		tryEating(((piTID)+(numPhil-1))%5);
-		tryEating((piTID+1)%5);
+		this.notifyAll();
 	}
 
 	/**
-	 * Only one philopher at a time is allowed to talk
+	 * Only one philosopher at a time is allowed to talk
 	 * (while she is not eating).
 	 */
-	public synchronized void requestTalk(final int piTID)
+	public void requestTalk(final int piTID) throws InterruptedException
 	{
-		//Extremely unsure about the logic but here goes:
-		//separating it in 2 for loops ensures that all philosophers are checked, no matter
-		//which philosopher does it first.
-		//Please verify this!!!!!
-		//It probably isn't right because then when you wait,
-		//once the waiting is done you go back directly to the line after
-		
-		//W: We only talk after eating right? so why check if we eat?
-		//So the wait and notifyall are already used for eating, so I think we might have to use something else.
-		//Why two loops? Just check that every single philo is not talking
-		if (philState[piTID] != State.EATING)
+		//waiting if someone is already talking, talking otherwise
+		synchronized (this)
 		{
-			for (int i=0; i<piTID; i++) 
+			for (int i=0; i < philState.length; i++) 
 			{
-				if (philState[i]==State.TALKING) 
-				{
-					try {
+				
+					if (philState[i]==State.TALKING) 
+					{
 						wait();
-					} catch (InterruptedException e) {
-						System.err.println(e);
+					} else
+					{
+						philState[piTID] = State.TALKING;
+						return;
 					}
-				}
+				
 			}
-			//W: switching to i if that's okay, when I see j I think immediately of nested loops
-			for (int i=piTID; i<numPhil; i++) 
-			{
-				if (philState[i]==State.TALKING) 
-				{
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						System.err.println(e);
-					}
-				}
-			}
-			philState[piTID] = State.TALKING;
 		}
 	}
 
@@ -130,27 +115,11 @@ public class Monitor
 	 */
 	public synchronized void endTalk(final int piTID)
 	{
-		//This needs extra logic to make sure we're letting every other thread try to talk
-		//W: Why? This is letting everyone know since they all consult the state array.
+		//Going back to thinking and letting everyone know
 		philState[piTID] = State.THINKING;
+		this.notifyAll();
 	}
-	//CAMIL: I'm the one who added this method.
-	public synchronized void tryEating(final int piTID) 
-	{
-		//W: you make the calling philo hungry before calling this, why check again?
-		//W: makes sense, checking philos left and right
-		if ((philState[(piTID +(numPhil-1)) % numPhil]!=State.EATING)
-			&& (philState[piTID]==State.HUNGRY)
-			&& (philState[(piTID+1)%numPhil]!=State.EATING)
-			) 
-		{
-			philState[piTID] = State.EATING;
-			//W: notifyAll wakes up all threads that are waiting on this object's monitor
-			//so I think that should be used to let the others know that we're done eating.(should put this in putDown)
-			//notify says "you may eat", not "I'm eating"
-			notifyAll();
-		}
-	}
+
 }
 
 // EOF
