@@ -19,15 +19,20 @@ public class Philosopher extends BaseThread
 	 * - yield
 	 * - Then sleep() for a random interval.
 	 * - yield
-	 * - The print that they are done eating.
+	 * - Then print that they are done eating.
 	 */
 	public void eat()
 	{
 		try
 		{
-			// ...
+			// W: code in try block, not sure why the hints tell us to yield both before and after sleeping
+			// since sleeping already allows other threads to take cpu time
+			System.out.println(String.format("Philosopher %d has started eating.", this.iTID));
+			yield();
 			sleep((long)(Math.random() * TIME_TO_WASTE));
-			// ...
+			yield();
+			System.out.println(String.format("Philosopher %d is done eating.", this.iTID));
+			
 		}
 		catch(InterruptedException e)
 		{
@@ -47,7 +52,22 @@ public class Philosopher extends BaseThread
 	 */
 	public void think()
 	{
-		// ...
+		// W: using the try/catch block because sleep can throw an InterruptedException, which occurss when another thread interrupts this one
+		try
+		{
+			System.out.println(String.format("Philosopher %d has started thinking.", this.iTID));
+			yield();
+			sleep((long)(Math.random() * TIME_TO_WASTE));
+			yield();
+			System.out.println(String.format("Philosopher %d is done thinking.", this.iTID));
+			
+		}
+		catch(InterruptedException e)
+		{
+			System.err.println("Philosopher.think():");
+			DiningPhilosophers.reportException(e);
+			System.exit(1);
+		}
 	}
 
 	/**
@@ -60,15 +80,15 @@ public class Philosopher extends BaseThread
 	 */
 	public void talk()
 	{
-		// ...
-
+		System.out.println(String.format("Philosopher %d has started talking.", this.iTID));
+		yield();
 		saySomething();
-
-		// ...
+		yield();
+		System.out.println(String.format("Philosopher %d is done talking.", this.iTID));
 	}
 
 	/**
-	 * No, this is not the act of running, just the overridden Thread.run()
+	 * Overrides Thread.run()
 	 */
 	public void run()
 	{
@@ -85,9 +105,14 @@ public class Philosopher extends BaseThread
 			/*
 			 * TODO:
 			 * A decision is made at random whether this particular
-			 * philosopher is about to say something terribly useful.
+			 * philosopher is about to speak.
 			 */
-			if(true == false)
+			//CAMIL: Need to put a condition (a random number or something, and compare it with a number. If it is matching):
+			//CAMIL: requestTalk
+			//CAMIL: talk
+			//CAMIL: endTalk
+			//W: a philosopher will talk 1/4 of the time
+			if(Math.random() > 0.75)
 			{
 				// Some monitor ops down here...
 				talk();
