@@ -96,6 +96,7 @@ public class Philosopher extends BaseThread
 		{
 			for(int i = 0; i < DiningPhilosophers.DINING_STEPS; i++)
 			{
+				//TID starts at 1, so the corresponding array index is TID-1
 				DiningPhilosophers.soMonitor.pickUp(getTID()-1);
 
 				eat();
