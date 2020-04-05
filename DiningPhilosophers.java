@@ -48,6 +48,14 @@ public class DiningPhilosophers
 			 * or the default if no arguments supplied.
 			 */
 			int iPhilosophers = DEFAULT_NUMBER_OF_PHILOSOPHERS;
+			if(argv.length == 1) 
+			{
+				int input = Integer.parseInt(argv[0]);
+				if (input <= 15 && input >= 2)
+				{
+					iPhilosophers = input;
+				}
+			}
 
 			// Make the monitor aware of how many philosophers there are
 			soMonitor = new Monitor(iPhilosophers);
