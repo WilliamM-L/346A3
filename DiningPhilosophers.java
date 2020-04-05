@@ -23,6 +23,8 @@ public class DiningPhilosophers
 	 * while they are socializing there
 	 */
 	public static final int DINING_STEPS = 10;
+	public static final int MIN_AMOUNT_PHILOSOPHERS = 2;
+	public static final int MAX_AMOUNT_PHILOSOPHERS = 15;
 
 	/**
 	 * Our shared monitor for the philosphers to consult
@@ -50,11 +52,23 @@ public class DiningPhilosophers
 			int iPhilosophers = DEFAULT_NUMBER_OF_PHILOSOPHERS;
 			if(argv.length == 1) 
 			{
-				int input = Integer.parseInt(argv[0]);
-				if (input <= 15 && input >= 2)
+				try
 				{
-					iPhilosophers = input;
+					int input = Integer.parseInt(argv[0]);
+					if (input <= MAX_AMOUNT_PHILOSOPHERS && input >= MIN_AMOUNT_PHILOSOPHERS)
+					{
+						iPhilosophers = input;
+					} else
+					{
+						throw new NumberFormatException();
+					}
+				} catch (NumberFormatException e)
+				{
+					System.out.println(String.format("Invalid input! Must enter a number, and it must be between %d and %d inclusive. "
+							+ "The default number of philosophers will be used(%d).", 
+							MIN_AMOUNT_PHILOSOPHERS, MAX_AMOUNT_PHILOSOPHERS, DEFAULT_NUMBER_OF_PHILOSOPHERS));
 				}
+				
 			}
 
 			// Make the monitor aware of how many philosophers there are
