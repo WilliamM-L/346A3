@@ -91,20 +91,24 @@ public class Monitor
 	public void requestTalk(final int piTID) throws InterruptedException
 	{
 		//waiting if someone is already talking, talking otherwise
-		synchronized (this)
-		{
-			for (int i=0; i < philState.length; i++) 
-			{
-				
-					if (philState[i]==State.TALKING) 
+		if (philState[piTID] != State.EATING) {
+			while (philState[piTID] != State.TALKING) {
+				synchronized (this)
+				{
+					for (int i=0; i < philState.length; i++) 
 					{
-						wait();
-					} else
-					{
-						philState[piTID] = State.TALKING;
-						return;
+						
+							if (philState[i]==State.TALKING) 
+							{
+								wait();
+							} else
+							{
+								philState[piTID] = State.TALKING;
+								return;
+							}
+						
 					}
-				
+				}
 			}
 		}
 	}
